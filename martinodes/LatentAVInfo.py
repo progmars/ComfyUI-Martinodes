@@ -15,14 +15,14 @@ class LatentAVInfo:
             },
         }
 
-    RETURN_TYPES = ("LATENT", "INT", "STRING", "INT", "INT")
-    RETURN_NAMES = ("av_latent", "frames", "video_resolution", "video_tokens", "audio_tokens")
+    RETURN_TYPES = ("LATENT", "INT", "STRING", "INT", "INT", "STRING")
+    RETURN_NAMES = ("av_latent", "frames", "video_resolution", "video_tokens", "audio_tokens", "mask_info")
 
     SEARCH_ALIASES = ["av latent info", "latent info", "video audio latent info"]
 
     FUNCTION = "run"
     CATEGORY = CATEGORY
-    DESCRIPTION = "Displays basic info for a combined AV latent: frame count, video resolution, and token counts."
+    DESCRIPTION = "Displays basic info for a combined AV latent: frame count, video resolution, token counts, and mask information."
 
     def run(self, **kwargs):
         av_latent = kwargs.get("av_latent", None)
@@ -68,4 +68,45 @@ class LatentAVInfo:
             k = (float(video_tokens) - min_latent_temporal_tokens) / frame_offset
             frames = int(round(k * frame_multi + frame_offset))
 
-        return (av_latent, frames, video_resolution, video_tokens, audio_tokens)
+        # Latent mask information
+        noise_mask = av_latent.get("noise_mask", None)
+        if noise_mask is None:
+            mask_info = "None"
+        else:
+            if isinstance(noise_mask, comfy.nested_tensor.NestedTensor) or getattr(noise_mask, "is_nested", False):
+                mask_tensors = list(noise_mask.unbind())
+            elif isinstance(noise_mask, (list, tuple)):
+                mask_tensors = list(noise_mask)
+            elif isinstance(noise_mask, torch.Tensor):
+                mask_tensors = [noise_mask]
+            else:
+                mask_tensors = [noise_mask]
+
+            if len(mask_tensors) == 0:
+                mask_info = "None"
+            else:
+                parts = []
+                for idx, m in enumerate(mask_tensors):
+                    if not isinstance(m, torch.Tensor):
+                        parts.append(f"item_{idx}: {type(m).__name__}")
+                        continue
+
+                    if m.numel() == 0:
+                        parts.append(f"item_{idx}: empty")
+                        continue
+
+                    if len(mask_tensors) == 2:
+                        label = "video" if idx == 0 else "audio"
+                    elif len(mask_tensors) == 1:
+                        label = "video"
+                    else:
+                        label = f"mask_{idx}"
+
+                    min_val = round(float(m.min().item()), 3)
+                    max_val = round(float(m.max().item()), 3)
+                    val_str = f"all {min_val}" if min_val == max_val else f"range: {min_val}..{max_val}"
+                    parts.append(f"{label}: {list(m.shape)} ({val_str})")
+
+                mask_info = ", ".join(parts) if parts else "None"
+
+        return (av_latent, frames, video_resolution, video_tokens, audio_tokens, mask_info)

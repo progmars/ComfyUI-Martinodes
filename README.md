@@ -189,6 +189,7 @@ Retrieves information from a combined `av_latent`, while also passing the origin
   - `video_resolution`: Video latent spatial resolution as `width x height`.
   - `video_tokens`: Number of latent video temporal tokens.
   - `audio_tokens`: Number of latent audio temporal tokens.
+  - `mask_info`: Information about latent `noise_mask` (shape and range), or `None` if unmasked.
 
 ### Save video+audio latent (SaveAVLatent)
 Saves a video+audio latent to the ComfyUI output directory as a `.avlatent` safetensors file.
