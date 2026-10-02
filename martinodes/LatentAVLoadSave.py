@@ -18,6 +18,7 @@ class NoneLatent:
     def get_none(self):
         return (None, )
 
+
 class SaveAVLatent:
     def __init__(self):
         self.output_dir = folder_paths.get_output_directory()
@@ -96,16 +97,25 @@ def get_saved_latents():
 class LoadAVLatent:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {
-            "file_path": (get_saved_latents(), )
-        }}
+        return {
+            "required": {
+                "file_select": (get_saved_latents(), )
+            },
+            "optional": {
+                "file_path": ("STRING", )
+            }
+        }
 
     RETURN_TYPES = ("LATENT", )
     RETURN_NAMES = ("av_latent", )
     FUNCTION = "load"
     CATEGORY = CATEGORY
 
-    def load(self, file_path):
+    def load(self, file_select, file_path: None):
+
+        # manual file path overrides selector
+        if not file_path:
+            file_path = file_select
         
         if not file_path:
             return (None, )

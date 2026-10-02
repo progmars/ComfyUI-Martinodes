@@ -11,6 +11,7 @@ from .martinodes.LatentOverlappingConcatenator import LatentOverlappingConcatena
 from .martinodes.LatentAVCombiner import LatentAVCombiner
 from .martinodes.LatentAVSplitter import LatentAVSplitter
 from .martinodes.LatentAVContrast import LatentAVContrast
+from .martinodes.VideoLatentPicker import VideoLatentPicker
 
 NODE_CLASS_MAPPINGS = {
     "MARMediaSlicer": MediaSlicer,
@@ -28,7 +29,8 @@ NODE_CLASS_MAPPINGS = {
     "LatentFolderOverlappingConcatenator": LatentFolderOverlappingConcatenator,
     "LatentAVCombiner": LatentAVCombiner,
     "LatentAVSplitter": LatentAVSplitter,
-    "LatentAVContrast": LatentAVContrast
+    "LatentAVContrast": LatentAVContrast,
+    "VideoLatentPicker": VideoLatentPicker
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -47,5 +49,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LatentFolderOverlappingConcatenator": "Concatenate video+audio latents from folder",
     "LatentAVCombiner": "Combine video+audio latent",
     "LatentAVSplitter": "Split video+audio latent",
-    "LatentAVContrast": "Adjust video latent contrast"
+    "LatentAVContrast": "Adjust video latent contrast",
+    "VideoLatentPicker": "Pick latent from video"
 }

@@ -192,8 +192,25 @@ Loads a previously saved `.avlatent` file. In contrast to other loaders that loo
 
 The file list is refreshed from the output directory when the node input types are created. You can also refresh it by hitting R in ComfyUI. So, for convenient way of working, generate a video with SaveAVLatent enabled, hit R, select the freshly generated latent and it's ready to be extended.
 
-- **Inputs**: `file_path`
+- **Parameters**: 
+  - `file_select`: One of previously saved latents somewhere in the ComfyUI output folder
+  - `file_path`: Manually entered path to a latent file (overrides `file_select` and supports linking from a STRING output of another node)
 - **Outputs**: `av_latent`
+
+### Pick latent from video (VideoLatentPicker)
+Lists generated videos from the ComfyUI output directory whose path matches a regex, lets you preview and play them, and outputs the path of the latent that was saved together with the selected video. Pairs well with SaveAVLatent's `video_sync_latent_filename_prefix` and LoadAVLatent's `file_path`.
+
+The list is refreshed when the node is loaded, when the queue finishes, when the regex is edited, or with the Refresh button. Newest videos are listed first.
+
+- **Parameters**:
+  - `video_regex`: Regex matched from the start of the video path relative to the output directory (forward slashes). The first capturing group is used as the number; without a group, the whole match is used. Default: `video/.*ltnt_([0-9]+)_.*`.
+  - `latent_pattern`: Latent path template. The first `[0-9]` or `[0-9]+` is replaced with the captured number. Default: `av_latents/latent_[0-9]+.avlatent`.
+  - `selected_video`: Path of the selected video, filled by the "Select latent" button.
+- **UI**:
+  - `Show/Hide thumbnails`: Toggle video thumbnails in the list.
+  - `Play`: Plays the video in the built-in player (clicking a thumbnail does the same).
+  - `Select latent`: Selects the video and shows the resulting latent path.
+- **Outputs**: `latent_path`: The latent path relative to the output directory, e.g. `video/clip_ltnt_00005_00001.mp4` gives `av_latents/latent_00005.avlatent`. Can be used for LoadAVLatent `file_path`, e.g. for continuation or draft promotion use cases.
 
 
 ## History and acknowledgments
