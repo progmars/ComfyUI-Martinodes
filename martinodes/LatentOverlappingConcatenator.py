@@ -118,8 +118,8 @@ def concat_av_latents(video_fps, overlap_duration_seconds, video_overlap_resolve
     # snapping rules the extender uses, so overlaps stay aligned to the model's temporal compression.
     video_overlap_tokens = 0
     audio_overlap_tokens = 0
-    if overlap_duration_seconds > 0:
-        video_overlap_tokens, audio_overlap_tokens = align_time_to_tokens(overlap_duration_seconds, video_fps, MINIMAX_H3_PARAMS)
+
+    video_overlap_tokens, audio_overlap_tokens = align_time_to_tokens(overlap_duration_seconds, video_fps, MINIMAX_H3_PARAMS)
 
     samples_1 = av_latent_1["samples"]
     samples_2 = av_latent_2["samples"]
