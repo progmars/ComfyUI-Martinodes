@@ -2,7 +2,7 @@ import os
 import torch
 import folder_paths
 from .shared import CATEGORY, MINIMAX_H3_PARAMS
-from .latentops import align_time_to_tokens
+from .latentops import align_duration_to_tokens
 from .LatentAVLoadSave import LoadAVLatent
 
 
@@ -119,7 +119,7 @@ def concat_av_latents(video_fps, overlap_duration_seconds, video_overlap_resolve
     video_overlap_tokens = 0
     audio_overlap_tokens = 0
 
-    video_overlap_tokens, audio_overlap_tokens = align_time_to_tokens(overlap_duration_seconds, video_fps, MINIMAX_H3_PARAMS)
+    video_overlap_tokens, audio_overlap_tokens = align_duration_to_tokens(overlap_duration_seconds, video_fps, MINIMAX_H3_PARAMS)
 
     samples_1 = av_latent_1["samples"]
     samples_2 = av_latent_2["samples"]

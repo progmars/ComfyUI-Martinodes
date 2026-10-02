@@ -1,5 +1,5 @@
 from .shared import CATEGORY, MINIMAX_H3_PARAMS
-from .latentops import align_time_to_tokens, align_offset_to_chunk_tokens
+from .latentops import align_offset_to_tokens
 import torch
 import comfy.nested_tensor
 
@@ -58,19 +58,17 @@ class LatentAVSlicer:
         samples = av_latent.get("samples", None)
         if samples is None:
             raise ValueError("LatentAVSlicer: av_latent does not contain 'samples'")
-
+        
+        is_nested = False
         if isinstance(samples, comfy.nested_tensor.NestedTensor) or getattr(samples, "is_nested", False):
             tensors = list(samples.unbind())
             is_nested = True
         elif isinstance(samples, (list, tuple)):
             tensors = list(samples)
-            is_nested = False
         elif isinstance(samples, torch.Tensor):
             tensors = [samples]
-            is_nested = False
         else:
             tensors = [samples]
-            is_nested = False
 
         if not tensors:
             raise ValueError("LatentAVSlicer: No sample tensors found in av_latent")
@@ -91,7 +89,7 @@ class LatentAVSlicer:
             t_dim_a = -1
             total_a = 0
 
-        start_v, start_a = align_offset_to_chunk_tokens(start_offset_seconds, video_fps, params)
+        start_v, start_a = align_offset_to_tokens(start_offset_seconds, video_fps, params)
         start_v = min(start_v, total_v)
         if audio_tensor is not None:
             start_a = min(start_a, total_a)
@@ -102,7 +100,7 @@ class LatentAVSlicer:
                 end_a = total_a
             else:
                 target_duration = max(0.0, end_offset_seconds - start_offset_seconds)
-                dur_v, dur_a = align_offset_to_chunk_tokens(target_duration, video_fps, params)
+                dur_v, dur_a = align_offset_to_tokens(target_duration, video_fps, params)
                 end_v = min(start_v + dur_v, total_v)
                 if audio_tensor is not None:
                     end_a = min(start_a + dur_a, total_a)
@@ -111,7 +109,7 @@ class LatentAVSlicer:
                 end_v = total_v
                 end_a = total_a
             else:
-                end_v_trim, end_a_trim = align_offset_to_chunk_tokens(end_offset_seconds, video_fps, params)
+                end_v_trim, end_a_trim = align_offset_to_tokens(end_offset_seconds, video_fps, params)
                 end_v = max(0, total_v - end_v_trim)
                 end_a = max(0, total_a - end_a_trim) if audio_tensor is not None else 0
 

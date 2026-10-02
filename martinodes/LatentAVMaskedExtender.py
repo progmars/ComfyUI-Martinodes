@@ -1,5 +1,5 @@
 from .shared import CATEGORY, MINIMAX_H3_PARAMS
-from .latentops import align_time_to_tokens
+from .latentops import align_duration_to_tokens
 import torch
 
 class LatentAVMaskedExtender:
@@ -35,7 +35,7 @@ class LatentAVMaskedExtender:
         
         params = MINIMAX_H3_PARAMS
 
-        video_overlap_tokens, audio_overlap_tokens = align_time_to_tokens(overlap_duration_seconds, video_fps, params)
+        video_overlap_tokens, audio_overlap_tokens = align_duration_to_tokens(overlap_duration_seconds, video_fps, params)
 
         audio_token_rate = params["audio_token_rate"]
         frame_multi = params["frame_multi"]
@@ -51,6 +51,7 @@ class LatentAVMaskedExtender:
             video_fade_tokens, audio_fade_tokens,
             trim_freeze_tail, freeze_threshold
         )
+
 
     def extend_masked(self, loaded_av, target_av, mode, video_overlap_tokens, audio_overlap_tokens, video_fade_tokens, audio_fade_tokens, trim_freeze_tail, freeze_threshold):
         out_av = loaded_av.copy()

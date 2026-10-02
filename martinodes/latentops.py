@@ -1,23 +1,24 @@
-def align_offset_to_chunk_tokens(seconds, video_fps, params):
+def align_offset_to_tokens(seconds, video_fps, params):
     """
     Calculates the number of video and audio tokens to advance or trim by whole VAE chunks.
-    MiniMax H3 video VAE encodes in 17-frame clips, each advancing the latent by 5 tokens.
-    Slicing at head/tail must advance by multiples of 5 tokens to keep VAE temporal decoding in-phase.
+    Video VAE encodes in frame_multi-frame clips, each advancing the latent by frame_offset tokens.
+    Slicing at head/tail must advance by multiples of frame_offset tokens to keep VAE temporal decoding in-phase.
     """
-    audio_token_rate = params.get("audio_token_rate", 40)
-    frame_multi = params.get("frame_multi", 17.0)
+    audio_token_rate = params["audio_token_rate"]
+    frame_multi = params["frame_multi"]
+    frame_offset = params["frame_offset"]
 
     target_frames = seconds * video_fps
     k = max(0, int(round(target_frames / frame_multi)))
-    video_tokens = int(k * 5)
+    video_tokens = int(k * frame_offset)
     audio_tokens = int(round((k * frame_multi) * (audio_token_rate / video_fps)))
     return video_tokens, audio_tokens
 
 
-def align_time_to_tokens(seconds, video_fps, params):
+def align_duration_to_tokens(seconds, video_fps, params):
     """
-    Aligns time duration to standalone video and audio token count (e.g. 5k - 3 for k >= 1).
-    Used for standalone clips or target sequence lengths.
+    Aligns time duration to video and audio token count (e.g. 5k - 3 for k >= 1).
+    Used for standalone clips or sequence lengths (overlap etc).
     """
     audio_token_rate = params["audio_token_rate"]
     frame_multi = params["frame_multi"]
