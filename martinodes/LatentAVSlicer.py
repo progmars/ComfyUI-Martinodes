@@ -1,5 +1,5 @@
 from .shared import CATEGORY, MINIMAX_H3_PARAMS
-from .latentops import align_offset_to_tokens
+from .latentops import align_duration_to_tokens, align_offset_to_tokens
 import torch
 import comfy.nested_tensor
 
@@ -80,14 +80,9 @@ class LatentAVSlicer:
         t_dim_v = 2 if dims_v >= 3 else 0
         total_v = video_tensor.shape[t_dim_v]
 
-        if audio_tensor is not None:
-            dims_a = len(audio_tensor.shape)
-            t_dim_a = -1
-            total_a = audio_tensor.shape[t_dim_a]
-        else:
-            dims_a = 0
-            t_dim_a = -1
-            total_a = 0
+        dims_a = len(audio_tensor.shape)
+        t_dim_a = -1
+        total_a = audio_tensor.shape[t_dim_a]
 
         start_v, start_a = align_offset_to_tokens(start_offset_seconds, video_fps, params)
         start_v = min(start_v, total_v)
@@ -95,23 +90,13 @@ class LatentAVSlicer:
             start_a = min(start_a, total_a)
 
         if end_offset_from == "start":
-            if end_offset_seconds <= 0.0:
-                end_v = total_v
-                end_a = total_a
-            else:
-                target_duration = max(0.0, end_offset_seconds - start_offset_seconds)
-                dur_v, dur_a = align_offset_to_tokens(target_duration, video_fps, params)
-                end_v = min(start_v + dur_v, total_v)
-                if audio_tensor is not None:
-                    end_a = min(start_a + dur_a, total_a)
+            end_v, end_a = align_duration_to_tokens(end_offset_seconds, video_fps, params)
+            end_v = min(end_v, total_v)
+            end_a = min(end_a, total_a)
         else:  # "end"
-            if end_offset_seconds <= 0.0:
-                end_v = total_v
-                end_a = total_a
-            else:
-                end_v_trim, end_a_trim = align_offset_to_tokens(end_offset_seconds, video_fps, params)
-                end_v = max(0, total_v - end_v_trim)
-                end_a = max(0, total_a - end_a_trim) if audio_tensor is not None else 0
+            end_v_trim, end_a_trim = align_offset_to_tokens(end_offset_seconds, video_fps, params)
+            end_v = max(0, total_v - end_v_trim)
+            end_a = max(0, total_a - end_a_trim)
 
         if start_v >= end_v:
             hint = " (if 'end_offset_seconds' was intended as an absolute timestamp from start, set end_offset_from='start')" if end_offset_from == "end" else ""
@@ -120,7 +105,7 @@ class LatentAVSlicer:
                 f"(total video tokens: {total_v}){hint}. Slicing would result in an empty latent."
             )
 
-        if audio_tensor is not None and start_a >= end_a:
+        if start_a >= end_a:
             hint = " (if 'end_offset_seconds' was intended as an absolute timestamp from start, set end_offset_from='start')" if end_offset_from == "end" else ""
             raise ValueError(
                 f"LatentAVSlicer: Calculated start audio token ({start_a}) is >= end audio token ({end_a}) "
@@ -131,13 +116,10 @@ class LatentAVSlicer:
         idx_v[t_dim_v] = slice(start_v, end_v)
         sliced_video = video_tensor[tuple(idx_v)]
 
-        if audio_tensor is not None:
-            idx_a = [slice(None)] * dims_a
-            idx_a[t_dim_a] = slice(start_a, end_a)
-            sliced_audio = audio_tensor[tuple(idx_a)]
-            sliced_tensors = [sliced_video, sliced_audio]
-        else:
-            sliced_tensors = [sliced_video]
+        idx_a = [slice(None)] * dims_a
+        idx_a[t_dim_a] = slice(start_a, end_a)
+        sliced_audio = audio_tensor[tuple(idx_a)]
+        sliced_tensors = [sliced_video, sliced_audio]
 
         out_av = av_latent.copy()
         if is_nested:
