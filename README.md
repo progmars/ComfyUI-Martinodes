@@ -166,6 +166,19 @@ Splits a combined `av_latent` into separate `video_latent` and `audio_latent`, u
 - **Inputs**: `av_latent`
 - **Outputs**: `video_latent`, `audio_latent`
 
+### Slice video+audio latent (LatentAVSlicer)
+Takes a slice of a combined video+audio latent using two time offsets aligned to the MiniMax H3 latent grid.
+
+Currently supports MiniMax H3 only, aligning start and end offsets to the model's temporal compression rules similarly to LatentAVMaskedExtender.
+
+- **Inputs**: `av_latent`
+- **Parameters**:
+  - `start_offset_seconds`: Time offset from the start of the latent (default: `0.0`).
+  - `end_offset_seconds`: Time offset for the end of the slice (default: `0.0`).
+  - `end_offset_from`: Whether `end_offset_seconds` is measured from the `"start"` (default) of the latent or from the `"end"` (as an absolute timestamp).
+  - `video_fps`: Frame rate used to calculate synchronized video and audio token lengths (default: `24.0`).
+- **Outputs**: `av_latent`
+
 ### Video+audio latent info (LatentAVInfo)
 Retrieves information from a combined `av_latent`, while also passing the original latent through for convenience in longer node chains.
 

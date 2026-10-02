@@ -47,6 +47,38 @@ def build_latent_path(video_path, video_regex, latent_pattern):
     return NUMBER_TOKEN.sub(lambda _: extract_number(match), latent_pattern, count=1)
 
 
+def is_safe_path(target_path):
+    target = os.path.abspath(target_path)
+    allowed_dirs = [
+        folder_paths.get_output_directory(),
+        folder_paths.get_temp_directory(),
+        folder_paths.get_input_directory(),
+    ]
+    for d in allowed_dirs:
+        if not d:
+            continue
+        base = os.path.abspath(d)
+        try:
+            if os.path.commonpath([base, target]) == base:
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+def resolve_file_path(path_str):
+    if not path_str:
+        return None
+    output_dir = folder_paths.get_output_directory()
+    if os.path.isabs(path_str):
+        full_path = os.path.abspath(path_str)
+    else:
+        full_path = os.path.abspath(os.path.join(output_dir, path_str))
+    if is_safe_path(full_path):
+        return full_path
+    return None
+
+
 @PromptServer.instance.routes.get("/martinodes/videos")
 async def list_videos(request):
     video_regex = request.rel_url.query.get("regex", DEFAULT_VIDEO_REGEX)
@@ -55,6 +87,69 @@ async def list_videos(request):
     except re.error as e:
         return web.json_response({"error": f"Invalid regex: {e}", "videos": []}, status=400)
     return web.json_response({"videos": videos})
+
+
+@PromptServer.instance.routes.post("/martinodes/delete_video_and_latent")
+async def delete_video_and_latent(request):
+    try:
+        data = await request.json()
+    except Exception as e:
+        return web.json_response({"error": f"Invalid JSON payload: {e}"}, status=400)
+
+    video_path = data.get("video_path")
+    if not video_path:
+        return web.json_response({"error": "Missing 'video_path' in request"}, status=400)
+
+    video_regex = data.get("video_regex", DEFAULT_VIDEO_REGEX)
+    latent_pattern = data.get("latent_pattern", DEFAULT_LATENT_PATTERN)
+    latent_path = data.get("latent_path")
+
+    if not latent_path:
+        try:
+            latent_path = build_latent_path(video_path, video_regex, latent_pattern)
+        except Exception:
+            latent_path = ""
+
+    video_full = resolve_file_path(video_path)
+    if not video_full:
+        return web.json_response({"error": f"Invalid or disallowed video path: {video_path}"}, status=403)
+
+    latent_full = resolve_file_path(latent_path) if latent_path else None
+
+    video_deleted = False
+    latent_deleted = False
+
+    if os.path.isfile(video_full):
+        try:
+            os.remove(video_full)
+            video_deleted = True
+        except OSError as e:
+            return web.json_response({"error": f"Failed to delete video file: {e}"}, status=500)
+    elif os.path.exists(video_full):
+        return web.json_response({"error": f"Target video is not a regular file: {video_path}"}, status=400)
+
+    if latent_full and os.path.isfile(latent_full):
+        try:
+            os.remove(latent_full)
+            latent_deleted = True
+        except OSError as e:
+            return web.json_response({
+                "error": f"Video deleted, but failed to delete latent file: {e}",
+                "video_deleted": video_deleted,
+                "latent_path": latent_path,
+            }, status=500)
+
+    if not video_deleted and not latent_deleted:
+        if not os.path.exists(video_full):
+            return web.json_response({"error": f"Video file not found: {video_path}"}, status=404)
+
+    return web.json_response({
+        "success": True,
+        "video_deleted": video_deleted,
+        "latent_deleted": latent_deleted,
+        "video_path": video_path,
+        "latent_path": latent_path if (latent_full and latent_deleted) else "",
+    })
 
 
 class VideoLatentPicker:

@@ -21,8 +21,8 @@ function el(tag, style = {}, text) {
     return e;
 }
 
-function button(label, onClick) {
-    const b = el("button", { fontSize: "11px", padding: "1px 6px", cursor: "pointer", whiteSpace: "nowrap" }, label);
+function button(label, onClick, style = {}) {
+    const b = el("button", Object.assign({ fontSize: "11px", padding: "1px 6px", cursor: "pointer", whiteSpace: "nowrap" }, style), label);
     b.addEventListener("click", (e) => {
         e.stopPropagation();
         onClick();
@@ -33,6 +33,160 @@ function button(label, onClick) {
 function videoUrl(v) {
     const q = new URLSearchParams({ filename: v.filename, subfolder: v.subfolder, type: "output" });
     return api.apiURL(`/view?${q}`);
+}
+
+class VideoPopup {
+    static instance = null;
+
+    static get() {
+        if (!VideoPopup.instance) {
+            VideoPopup.instance = new VideoPopup();
+        }
+        return VideoPopup.instance;
+    }
+
+    constructor() {
+        this.currentVideo = null;
+        this.currentPicker = null;
+
+        this.overlay = el("div", {
+            display: "none",
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.75)",
+            zIndex: "10000",
+            justifyContent: "center",
+            alignItems: "center",
+            boxSizing: "border-box",
+            padding: "20px",
+        });
+
+        this.dialog = el("div", {
+            backgroundColor: "var(--comfy-menu-bg, #242424)",
+            border: "1px solid var(--border-color, #444)",
+            borderRadius: "8px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.6)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            maxWidth: "90vw",
+            maxHeight: "90vh",
+            padding: "10px 14px 14px 14px",
+            color: "var(--input-text, #ddd)",
+            boxSizing: "border-box",
+        });
+
+        const header = el("div", {
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            justifyContent: "space-between",
+            width: "100%",
+        });
+
+        this.title = el("span", {
+            fontWeight: "bold",
+            fontSize: "12px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            flex: "1",
+        });
+
+        const actions = el("div", {
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            flexShrink: "0",
+        });
+
+        this.selectBtn = button("Select latent", () => {
+            if (this.currentVideo && this.currentPicker) {
+                this.currentPicker.select(this.currentVideo);
+                this.selectBtn.textContent = "Selected";
+            }
+        });
+
+        this.deleteBtn = button("Delete", () => {
+            if (this.currentVideo && this.currentPicker) {
+                this.currentPicker.deleteVideo(this.currentVideo);
+            }
+        }, { color: "#ff6b6b" });
+
+        const closeBtn = button("✕", () => this.close(), {
+            fontSize: "14px",
+            fontWeight: "bold",
+            padding: "1px 6px",
+        });
+        closeBtn.title = "Close preview (Esc)";
+
+        actions.append(this.selectBtn, this.deleteBtn, closeBtn);
+        header.append(this.title, actions);
+
+        this.video = el("video", {
+            maxWidth: "85vw",
+            maxHeight: "75vh",
+            backgroundColor: "#000",
+            borderRadius: "4px",
+            display: "block",
+        });
+        this.video.controls = true;
+
+        this.dialog.append(header, this.video);
+        this.overlay.append(this.dialog);
+
+        // Prevent ComfyUI canvas / node interaction while overlay is open
+        const stop = (e) => e.stopPropagation();
+        ["pointerdown", "mousedown", "mouseup", "click", "dblclick", "wheel", "contextmenu"].forEach((evt) => {
+            this.overlay.addEventListener(evt, stop);
+        });
+
+        // Close on clicking backdrop
+        this.overlay.addEventListener("click", (e) => {
+            if (e.target === this.overlay) {
+                this.close();
+            }
+        });
+
+        // Close on Escape key
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && this.isOpen()) {
+                e.stopPropagation();
+                this.close();
+            }
+        }, true);
+
+        document.body.appendChild(this.overlay);
+    }
+
+    isOpen() {
+        return this.overlay.style.display === "flex";
+    }
+
+    open(v, picker) {
+        this.currentVideo = v;
+        this.currentPicker = picker;
+        this.title.textContent = v.path;
+        this.title.title = v.path;
+        const isSel = picker?.widget("selected_video")?.value === v.path;
+        this.selectBtn.textContent = isSel ? "Unselect" : "Select";
+        this.video.src = videoUrl(v);
+        this.overlay.style.display = "flex";
+        this.video.play().catch(() => {});
+    }
+
+    close() {
+        if (!this.isOpen()) return;
+        this.video.pause();
+        this.video.removeAttribute("src");
+        this.video.load();
+        this.overlay.style.display = "none";
+        this.currentVideo = null;
+        this.currentPicker = null;
+    }
 }
 
 class Picker {
@@ -53,18 +207,9 @@ class Picker {
         toolbar.append(button("Refresh", () => this.refresh()), this.thumbBtn, this.status);
 
         this.latentLabel = el("div", { opacity: "0.85", wordBreak: "break-all" });
-
-        this.player = el("div", { display: "none", flexDirection: "column", gap: "2px" });
-        this.playerVideo = el("video", { width: "100%", maxHeight: "240px", background: "#000" });
-        this.playerVideo.controls = true;
-        this.playerTitle = el("span", { flex: "1", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" });
-        const playerBar = el("div", { display: "flex", gap: "4px", alignItems: "center" });
-        playerBar.append(this.playerTitle, button("Close", () => this.closePlayer()));
-        this.player.append(playerBar, this.playerVideo);
-
         this.list = el("div", { flex: "1", overflowY: "auto", display: "flex", flexDirection: "column", gap: "2px", minHeight: "0" });
 
-        this.root.append(toolbar, this.latentLabel, this.player, this.list);
+        this.root.append(toolbar, this.latentLabel, this.list);
         // Keep canvas from hijacking wheel/drag inside the list
         this.list.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
     }
@@ -91,17 +236,13 @@ class Picker {
     }
 
     play(v) {
-        this.playerTitle.textContent = v.path;
-        this.playerVideo.src = videoUrl(v);
-        this.player.style.display = "flex";
-        this.playerVideo.play().catch(() => {});
+        VideoPopup.get().open(v, this);
     }
 
     closePlayer() {
-        this.playerVideo.pause();
-        this.playerVideo.removeAttribute("src");
-        this.playerVideo.load();
-        this.player.style.display = "none";
+        if (VideoPopup.instance?.currentPicker === this) {
+            VideoPopup.instance.close();
+        }
     }
 
     select(v) {
@@ -111,6 +252,49 @@ class Picker {
         w.callback?.(w.value);
         this.render();
         this.node.setDirtyCanvas(true, true);
+    }
+
+    async deleteVideo(v) {
+        const latentPath = this.latentFor(v.number);
+        const confirmMsg = `Are you sure you want to delete this video and its latent file?\n\nVideo: ${v.path}\nLatent: ${latentPath || "(none)"}`;
+        if (!confirm(confirmMsg)) return;
+
+        if (VideoPopup.instance?.currentVideo?.path === v.path) {
+            VideoPopup.instance.close();
+        }
+
+        this.status.textContent = `Deleting ${v.filename}...`;
+
+        try {
+            const res = await api.fetchApi("/martinodes/delete_video_and_latent", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    video_path: v.path,
+                    video_regex: this.widget("video_regex")?.value ?? "",
+                    latent_pattern: this.widget("latent_pattern")?.value ?? "",
+                    latent_path: latentPath,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) {
+                alert(`Error deleting: ${data.error || res.statusText}`);
+                this.status.textContent = `Delete failed: ${data.error || res.statusText}`;
+                return;
+            }
+
+            const selWidget = this.widget("selected_video");
+            if (selWidget && selWidget.value === v.path) {
+                selWidget.value = "";
+                selWidget.callback?.("");
+                this.node.setDirtyCanvas(true, true);
+            }
+
+            pickers.forEach((p) => p.refresh());
+        } catch (e) {
+            alert(`Error deleting: ${e.message}`);
+            this.status.textContent = `Delete failed: ${e.message}`;
+        }
     }
 
     latentFor(number) {
@@ -143,7 +327,13 @@ class Picker {
             const name = el("span", { flex: "1", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, v.path);
             name.title = v.path;
             const num = el("span", { opacity: "0.7" }, `#${v.number}`);
-            row.append(name, num, button("Play", () => this.play(v)), button(isSel ? "Selected" : "Select latent", () => this.select(v)));
+            row.append(
+                name,
+                num,
+                button("Play", () => this.play(v)),
+                button(isSel ? "Unselect" : "Select", () => this.select(v)),
+                button("Delete", () => this.deleteVideo(v), { color: "#ff6b6b" })
+            );
             this.list.append(row);
         }
     }

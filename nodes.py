@@ -12,6 +12,7 @@ from .martinodes.LatentAVCombiner import LatentAVCombiner
 from .martinodes.LatentAVSplitter import LatentAVSplitter
 from .martinodes.LatentAVContrast import LatentAVContrast
 from .martinodes.VideoLatentPicker import VideoLatentPicker
+from .martinodes.LatentAVSlicer import LatentAVSlicer
 
 NODE_CLASS_MAPPINGS = {
     "MARMediaSlicer": MediaSlicer,
@@ -30,7 +31,8 @@ NODE_CLASS_MAPPINGS = {
     "LatentAVCombiner": LatentAVCombiner,
     "LatentAVSplitter": LatentAVSplitter,
     "LatentAVContrast": LatentAVContrast,
-    "VideoLatentPicker": VideoLatentPicker
+    "VideoLatentPicker": VideoLatentPicker,
+    "LatentAVSlicer": LatentAVSlicer
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -50,5 +52,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LatentAVCombiner": "Combine video+audio latent",
     "LatentAVSplitter": "Split video+audio latent",
     "LatentAVContrast": "Adjust video latent contrast",
-    "VideoLatentPicker": "Pick latent from video"
+    "VideoLatentPicker": "Pick latent from video",
+    "LatentAVSlicer": "Slice video+audio latent"
 }
