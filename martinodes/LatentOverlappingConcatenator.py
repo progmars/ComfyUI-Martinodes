@@ -98,7 +98,7 @@ class LatentFolderOverlappingConcatenator:
 
         out_av = None
         for f in files:
-            (av_latent, ) = loader.load(os.path.join(folder, f))
+            (av_latent, ) = loader.load(None, os.path.join(folder, f))
             if av_latent is None:
                 raise RuntimeError(f"LatentFolderOverlappingConcatenator: Failed to load '{f}'")
             out_av = concat_av_latents(video_fps, overlap_duration_seconds, video_resolve, audio_resolve, av_latent_1=out_av, av_latent_2=av_latent)
