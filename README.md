@@ -123,13 +123,13 @@ For convenience, the node accepts empty loaded_av, in which case the target_av w
 The implementation requires the latest ComfyUI with [native masking PR 15375](https://github.com/Comfy-Org/ComfyUI/pull/15375) merged.
 
 - **Inputs**: 
-  - `target_av`: The latent prepared by default ComfyUI workflows before passing it to a sampler.
-  - `loaded_av`: (optional) The loaded latent to use for head/tail overlapping.
+  - `target_av_latent`: The latent prepared by default ComfyUI workflows before passing it to a sampler.
+  - `extendable_latent`: (optional) The latent to use for continuing / prepending.
 - **Parameters**:
-  - `mode`: extend_tail or prepend_head
+  - `mode`: extend_tail (default to continue the `extendable_latent`) or prepend_head
   - `overlap_duration_seconds`: Duration of the loaded video head/tail to preserve. The part will be overlapped onto the end/beginning of the target_av latent, thus total length of the video will not be changed.
   - `video_fps`: Frame rate used to calculate synchronized video and audio token lengths.
-  - `video_fade_seconds` and `audio_fade_seconds`: To soften transitions. Higher values of 0.5 or more usually are needed for `prepend_head` mode.
+  - `video_mask_fade_seconds` and `audio_mask_fade_seconds`: To soften transitions and reduce occasional hard scene cuts. Higher values of 0.5 or more might be needed for `prepend_head` mode. Use 0 for single frame image latents.
   - `trim_freeze_tail` and `freeze_threshold`: Might help in cases when the latent ends with a frozen part (sometimes happens with FLF2V). WARNING: Not tested in action, so might be totally useless.
 - **Outputs**: `av_latent` with a `noise_mask` covering the preserved video and audio tails.
 
@@ -165,6 +165,17 @@ Splits a combined `av_latent` into separate `video_latent` and `audio_latent`, u
 
 - **Inputs**: `av_latent`
 - **Outputs**: `video_latent`, `audio_latent`
+
+### Adjust video+audio latent contrast (LatentAVContrast)
+Adjusts the video latent's contrast while leaving audio unchanged. Contrast can optionally interpolate over time, and each token's channel-wise norm can be preserved. Useful for trying to improve color frying in continued videos.
+
+- **Inputs**: `av_latent`
+- **Parameters**:
+  - `contrast`: Contrast scale from `0.0` to `3.0` (default: `1.0`).
+  - `interpolate`: Whether to interpolate contrast over time (default: `false`).
+  - `contrast_end`: Final contrast scale when interpolation is enabled (default: `1.0`).
+  - `keep_norm`: Preserve each token's norm across channels (default: `true`).
+- **Outputs**: `av_latent`
 
 ### Slice video+audio latent (LatentAVSlicer)
 Takes a slice of a combined video+audio latent using two time offsets aligned to the MiniMax H3 latent grid.

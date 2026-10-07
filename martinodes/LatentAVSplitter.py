@@ -1,5 +1,4 @@
-import torch
-import comfy.nested_tensor
+from .latentops import unpack_samples
 from .shared import CATEGORY
 
 
@@ -27,15 +26,7 @@ class LatentAVSplitter:
     def run(self, av_latent):
         samples = av_latent["samples"]
 
-        if isinstance(samples, comfy.nested_tensor.NestedTensor) or getattr(samples, "is_nested", False):
-            tensors = list(samples.unbind())
-        elif isinstance(samples, (list, tuple)):
-            tensors = list(samples)
-        elif isinstance(samples, torch.Tensor):
-            # If a plain tensor is passed, treat it as video-only and return empty audio.
-            tensors = [samples]
-        else:
-            tensors = [samples]
+        tensors = unpack_samples(samples)
 
         video_samples = tensors[0] if len(tensors) > 0 else None
         audio_samples = tensors[1] if len(tensors) > 1 else None

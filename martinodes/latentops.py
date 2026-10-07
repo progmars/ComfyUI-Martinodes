@@ -1,3 +1,6 @@
+import torch
+import comfy.nested_tensor
+
 def align_offset_to_tokens(seconds, video_fps, params):
     """
     Calculates the number of video and audio tokens to advance or trim by whole VAE chunks.
@@ -34,3 +37,23 @@ def align_duration_to_tokens(seconds, video_fps, params):
     return video_tokens, audio_tokens
 
 
+def unpack_samples(samples):
+    if isinstance(samples, comfy.nested_tensor.NestedTensor) or getattr(samples, "is_nested", False):
+        return list(samples.unbind())
+    if isinstance(samples, (list, tuple)):
+        return list(samples)
+    if isinstance(samples, torch.Tensor):
+        return [samples]
+    raise TypeError(f"LatentAVMaskedExtender: unsupported samples container {type(samples).__name__}")
+
+
+def pack_samples(template, tensors):
+    if isinstance(template, comfy.nested_tensor.NestedTensor) or getattr(template, "is_nested", False):
+        return comfy.nested_tensor.NestedTensor(tensors)
+    if isinstance(template, tuple):
+        return tuple(tensors)
+    if isinstance(template, list):
+        return list(tensors)
+    if len(tensors) == 1:
+        return tensors[0]
+    return comfy.nested_tensor.NestedTensor(tensors)

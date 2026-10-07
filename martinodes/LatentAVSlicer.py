@@ -1,6 +1,5 @@
 from .shared import CATEGORY, MINIMAX_H3_PARAMS
-from .latentops import align_duration_to_tokens, align_offset_to_tokens
-import torch
+from .latentops import align_duration_to_tokens, align_offset_to_tokens, unpack_samples
 import comfy.nested_tensor
 
 
@@ -60,15 +59,7 @@ class LatentAVSlicer:
             raise ValueError("LatentAVSlicer: av_latent does not contain 'samples'")
         
         is_nested = False
-        if isinstance(samples, comfy.nested_tensor.NestedTensor) or getattr(samples, "is_nested", False):
-            tensors = list(samples.unbind())
-            is_nested = True
-        elif isinstance(samples, (list, tuple)):
-            tensors = list(samples)
-        elif isinstance(samples, torch.Tensor):
-            tensors = [samples]
-        else:
-            tensors = [samples]
+        tensors = unpack_samples(samples)
 
         if not tensors:
             raise ValueError("LatentAVSlicer: No sample tensors found in av_latent")

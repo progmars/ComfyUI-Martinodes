@@ -1,5 +1,6 @@
 import torch
 import comfy.nested_tensor
+from .latentops import unpack_samples
 from .shared import CATEGORY
 
 
@@ -13,6 +14,8 @@ class LatentAVContrast:
             "required": {
                 "av_latent": ("LATENT", ),
                 "contrast": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 3.0, "step": 0.01}),
+                "interpolate": ("BOOLEAN", {"default": False}),
+                "contrast_end": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 3.0, "step": 0.01}),
                 "keep_norm": ( "BOOLEAN", { "default": True }),
             }
         }
@@ -24,26 +27,28 @@ class LatentAVContrast:
 
     FUNCTION = "run"
     CATEGORY = CATEGORY
-    DESCRIPTION = "Adjusts the contrast of the video part of a video+audio latent, leaving the audio part untouched."
+    DESCRIPTION = "Adjusts video latent contrast, optionally interpolating from contrast to contrast_end across time. Audio is unchanged."
 
-    def run(self, av_latent, contrast, keep_norm):
+    def run(self, av_latent, contrast, interpolate, contrast_end, keep_norm):
         samples = av_latent["samples"]
 
-        if isinstance(samples, comfy.nested_tensor.NestedTensor) or getattr(samples, "is_nested", False):
-            tensors = list(samples.unbind())
-        elif isinstance(samples, (list, tuple)):
-            tensors = list(samples)
-        elif isinstance(samples, torch.Tensor):
-            tensors = [samples]
-        else:
-            tensors = [samples]
+        tensors = unpack_samples(samples)
 
         orig = tensors[0].float()
 
         # Scale deviation from the per-channel mean to increase/decrease contrast.
         dims = tuple(d for d in range(2, orig.dim()))
         mean = orig.mean(dim=dims, keepdim=True)
-        video_tensor = mean + (orig - mean) * contrast
+        contrast_scale = contrast
+        if interpolate:
+            contrast_scale = torch.linspace(
+                contrast,
+                contrast_end,
+                steps=orig.shape[2],
+                device=orig.device,
+                dtype=orig.dtype,
+            ).view(1, 1, orig.shape[2], *([1] * (orig.dim() - 3)))
+        video_tensor = mean + (orig - mean) * contrast_scale
         if keep_norm:
             # Preserve each token's own norm (channel dim)
             orig_norm = orig.norm(dim=1, keepdim=True)

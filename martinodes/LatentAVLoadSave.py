@@ -3,6 +3,7 @@ import torch
 import safetensors.torch
 import folder_paths
 import comfy.nested_tensor
+from .latentops import unpack_samples
 from .shared import CATEGORY
 
 class NoneLatent:
@@ -49,17 +50,11 @@ class SaveAVLatent:
         output_dict = {}
         
         samples = av_latent.get("samples")
-        if samples is not None:
-            if isinstance(samples, comfy.nested_tensor.NestedTensor) or getattr(samples, "is_nested", False):
-                tensors = list(samples.unbind())
-            elif isinstance(samples, torch.Tensor):
-                tensors = [samples]
-            else:
-                tensors = samples if isinstance(samples, list) else [samples]
-                
-            output_dict["tensor_count"] = torch.tensor([len(tensors)], dtype=torch.int32)
-            for i, t in enumerate(tensors):
-                output_dict[f"latent_{i}"] = t.detach().contiguous()
+        tensors = unpack_samples(samples)
+
+        output_dict["tensor_count"] = torch.tensor([len(tensors)], dtype=torch.int32)
+        for i, t in enumerate(tensors):
+            output_dict[f"latent_{i}"] = t.detach().contiguous()
 
         # Save purely as safetensors with no metadata
         safetensors.torch.save_file(output_dict, output_path)
