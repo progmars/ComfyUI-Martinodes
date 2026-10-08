@@ -13,6 +13,7 @@ from .martinodes.LatentAVSplitter import LatentAVSplitter
 from .martinodes.LatentAVContrast import LatentAVContrast
 from .martinodes.VideoLatentPicker import VideoLatentPicker
 from .martinodes.LatentAVSlicer import LatentAVSlicer
+from .martinodes.MinimaxH3KeyframeConditioningInjector import MinimaxH3KeyframeConditioningInjector
 
 NODE_CLASS_MAPPINGS = {
     "MARMediaSlicer": MediaSlicer,
@@ -20,19 +21,20 @@ NODE_CLASS_MAPPINGS = {
     "MARAudioTrimExtender": AudioTrimExtender,
     "MARMediaTrimmer": MediaTrimmer,
     "MARAudioInfo": AudioInfo,
-    "LatentAVInfo": LatentAVInfo,
     "MARMediaOverlappingConcatenator": MediaOverlappingConcatenator,
-    "LatentAVMaskedExtender": LatentAVMaskedExtender,
-    "NoneLatent": NoneLatent,
-    "SaveAVLatent": SaveAVLatent,
-    "LoadAVLatent": LoadAVLatent,
-    "LatentOverlappingConcatenator": LatentOverlappingConcatenator,
-    "LatentFolderOverlappingConcatenator": LatentFolderOverlappingConcatenator,
-    "LatentAVCombiner": LatentAVCombiner,
-    "LatentAVSplitter": LatentAVSplitter,
-    "LatentAVContrast": LatentAVContrast,
-    "VideoLatentPicker": VideoLatentPicker,
-    "LatentAVSlicer": LatentAVSlicer
+    "MARLatentAVMaskedExtender": LatentAVMaskedExtender,
+    "MARLatentAVInfo": LatentAVInfo,
+    "MARNoneLatent": NoneLatent,
+    "MARSaveAVLatent": SaveAVLatent,
+    "MARLoadAVLatent": LoadAVLatent,
+    "MARLatentOverlappingConcatenator": LatentOverlappingConcatenator,
+    "MARLatentFolderOverlappingConcatenator": LatentFolderOverlappingConcatenator,
+    "MARLatentAVCombiner": LatentAVCombiner,
+    "MARLatentAVSplitter": LatentAVSplitter,
+    "MARLatentAVContrast": LatentAVContrast,
+    "MARVideoLatentPicker": VideoLatentPicker,
+    "MARLatentAVSlicer": LatentAVSlicer,
+    "MARMinimaxH3KeyframeConditioningInjector": MinimaxH3KeyframeConditioningInjector
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -41,17 +43,18 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "MARAudioResampler": "Resample audio",
     "MARMediaTrimmer": "Trim media",
     "MARAudioTrimExtender": "Ensure audio duration",
-    "LatentAVInfo": "Video+audio latent info",
+    "MARLatentAVInfo": "Video+audio latent info",
     "MARMediaOverlappingConcatenator": "Concatenate media",
-    "LatentAVMaskedExtender": "Extend video+audio latent",
-    "NoneLatent": "None latent",
-    "SaveAVLatent": "Save video+audio latent",
-    "LoadAVLatent": "Load video+audio latent",
-    "LatentOverlappingConcatenator": "Concatenate video+audio latents",
-    "LatentFolderOverlappingConcatenator": "Concatenate video+audio latents from folder",
-    "LatentAVCombiner": "Combine video+audio latent",
-    "LatentAVSplitter": "Split video+audio latent",
-    "LatentAVContrast": "Adjust video latent contrast",
-    "VideoLatentPicker": "Pick latent from video",
-    "LatentAVSlicer": "Slice video+audio latent"
+    "MARLatentAVMaskedExtender": "Extend video+audio latent",
+    "MARNoneLatent": "None latent",
+    "MARSaveAVLatent": "Save video+audio latent",
+    "MARLoadAVLatent": "Load video+audio latent",
+    "MARLatentOverlappingConcatenator": "Concatenate video+audio latents",
+    "MARLatentFolderOverlappingConcatenator": "Concatenate video+audio latents from folder",
+    "MARLatentAVCombiner": "Combine video+audio latent",
+    "MARLatentAVSplitter": "Split video+audio latent",
+    "MARLatentAVContrast": "Adjust video latent contrast",
+    "MARVideoLatentPicker": "Pick latent from video",
+    "MARLatentAVSlicer": "Slice video+audio latent",
+    "MARMinimaxH3KeyframeConditioningInjector": "Inject FL frames into H3 conditioning"
 }
