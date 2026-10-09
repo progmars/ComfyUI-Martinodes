@@ -1,7 +1,7 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
-const NODE_TYPE = "VideoLatentPicker";
+const NODE_TYPE = "MARVideoLatentPicker";
 const NUMBER_TOKEN = /\[0-9\]\+?/;
 const pickers = new Set();
 
