@@ -108,7 +108,7 @@ class LoadAVLatent:
 
     def load(self, file_select, file_path: None):
 
-        # manual file path overrides selector
+        # manual file path overrides selector (useful for automation from other nodes)
         if not file_path:
             file_path = file_select
         
@@ -118,7 +118,7 @@ class LoadAVLatent:
         # Reconstruct path relative to the output directory
         target_path = os.path.join(folder_paths.get_output_directory(), file_path)
         
-        # Fallback to absolute path if passed via converted string input widget
+        # Fallback to absolute path
         if not os.path.exists(target_path) and os.path.isabs(file_path):
             target_path = file_path
 
@@ -127,7 +127,9 @@ class LoadAVLatent:
             return (None, )
 
         try:
-            data = safetensors.torch.load_file(target_path, device="cpu")
+            with open(target_path, "rb") as latent_file:
+                file_data = latent_file.read()
+            data = safetensors.torch.load(file_data)
             av_latent = {}
 
             # Reconstruct main samples sequence
