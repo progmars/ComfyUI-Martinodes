@@ -2,6 +2,7 @@ import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
 const NODE_TYPE = "MARVideoLatentPicker";
+const PICKER_HEIGHT = 400;
 const NUMBER_TOKEN = /\[0-9\]\+?/;
 const pickers = new Set();
 
@@ -199,6 +200,7 @@ class Picker {
         this.root = el("div", {
             display: "flex", flexDirection: "column", gap: "4px", width: "100%", height: "100%",
             boxSizing: "border-box", fontSize: "11px", color: "var(--input-text, #ddd)", overflow: "hidden",
+            minHeight: "0", maxHeight: `${PICKER_HEIGHT}px`,
         });
 
         const toolbar = el("div", { display: "flex", gap: "4px", alignItems: "center", flexWrap: "wrap" });
@@ -354,8 +356,11 @@ app.registerExtension({
             this.addDOMWidget("video_list", "martinodes_video_list", picker.root, {
                 serialize: false,
                 getMinHeight: () => 200,
+                getMaxHeight: () => PICKER_HEIGHT,
+                getHeight: () => PICKER_HEIGHT,
             });
 
+            this.resizable = true;
             let timer;
             const regexWidget = picker.widget("video_regex");
             if (regexWidget) {
