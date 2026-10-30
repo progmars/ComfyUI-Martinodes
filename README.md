@@ -205,6 +205,18 @@ Splits a combined `av_latent` into separate `video_latent` and `audio_latent`, u
 - **Inputs**: `av_latent`
 - **Outputs**: `video_latent`, `audio_latent`
 
+### Inject any frame into H3 conditioning (MinimaxH3AnyFrameConditioningInjector)
+Injects a frame latent into MiniMax H3 conditioning at a specified frame index. The frame latent should already have the required resolution; the node does not resize it.
+
+- **Inputs**: `conditioning`, `frame_latent`, `frame_index` (zero-based frame index)
+- **Output**: Updated `conditioning`
+
+### Inject first or last frame into H3 conditioning (MinimaxH3KeyframeConditioningInjector)
+Injects optional first and/or last frame latents into MiniMax H3 conditioning. The reference AV latent determines the last frame index; the first frame is injected at index `0`. Frame latents should already have the required resolution; the node does not resize them.
+
+- **Inputs**: `conditioning`, `reference_av_latent`, optional `first_frame_latent`, optional `last_frame_latent`
+- **Output**: Updated `conditioning`
+
 ### Adjust video+audio latent contrast (LatentAVContrast)
 Adjusts the video latent's contrast while leaving audio unchanged. Contrast can optionally interpolate over time, and each token's channel-wise norm can be preserved. Useful for trying to improve color frying in continued videos.
 

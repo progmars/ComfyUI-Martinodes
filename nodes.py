@@ -16,7 +16,7 @@ from .martinodes.LatentAVSplitter import LatentAVSplitter
 from .martinodes.LatentAVContrast import LatentAVContrast
 from .martinodes.VideoLatentPicker import VideoLatentPicker
 from .martinodes.LatentAVSlicer import LatentAVSlicer
-from .martinodes.MinimaxH3KeyframeConditioningInjector import MinimaxH3KeyframeConditioningInjector
+from .martinodes.MinimaxH3KeyframeConditioningInjector import MinimaxH3KeyframeConditioningInjector, MinimaxH3AnyFrameConditioningInjector
 from .martinodes.BatchRandomPicker import BatchRandomPicker
 from .martinodes.BatchBoundPicker import BatchBoundPicker
 from .martinodes.FileLister import FileLister
@@ -45,6 +45,7 @@ NODE_CLASS_MAPPINGS = {
     "MARVideoLatentPicker": VideoLatentPicker,
     "MARLatentAVSlicer": LatentAVSlicer,
     "MARMinimaxH3KeyframeConditioningInjector": MinimaxH3KeyframeConditioningInjector,
+    "MARMinimaxH3AnyFrameConditioningInjector": MinimaxH3AnyFrameConditioningInjector,
     "MARBatchRandomPicker": BatchRandomPicker,
     "MARBatchBoundPicker": BatchBoundPicker,
     "MARFileLister": FileLister,
@@ -73,7 +74,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "MARLatentAVContrast": "Adjust video latent contrast",
     "MARVideoLatentPicker": "Pick latent from video",
     "MARLatentAVSlicer": "Slice video+audio latent",
-    "MARMinimaxH3KeyframeConditioningInjector": "Inject FL frames into H3 conditioning",
+    "MARMinimaxH3KeyframeConditioningInjector": "Inject first or last frame into H3 conditioning",
+    "MARMinimaxH3AnyFrameConditioningInjector": "Inject any frame into H3 conditioning",
     "MARBatchRandomPicker": "Pick random batch item",
     "MARBatchBoundPicker": "Pick first or last batch item",
     "MARFileLister": "List files in folder",

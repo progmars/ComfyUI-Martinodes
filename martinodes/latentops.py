@@ -72,3 +72,4 @@ def pack_samples(template, tensors):
     if len(tensors) == 1:
         return tensors[0]
     return comfy.nested_tensor.NestedTensor(tensors)
+

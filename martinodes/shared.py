@@ -7,7 +7,8 @@ MINIMAX_H3_PARAMS = {
     "audio_token_rate": 40,
     "frame_multi": 17.0,
     "frame_offset": 5.0,
-    "min_latent_temporal_tokens": 2.0
+    "min_latent_temporal_tokens": 2.0,
+    "keyframe_carrier_key": "minimax_keyframes"
 }
 
 
