@@ -26,6 +26,9 @@ def list_head_tail(list, take_count, start_end):
 
 
 def get_batch_size(batch):
+    if batch is None:
+        return 0
+
     if isinstance(batch, (list, tuple)):
         return len(batch)
 

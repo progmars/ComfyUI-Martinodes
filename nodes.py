@@ -16,6 +16,7 @@ from .martinodes.LatentAVSplitter import LatentAVSplitter
 from .martinodes.LatentAVContrast import LatentAVContrast
 from .martinodes.VideoLatentPicker import VideoLatentPicker
 from .martinodes.LatentAVSlicer import LatentAVSlicer
+from .martinodes.LatentTokenExtractor import LatentTokenExtractor
 from .martinodes.MinimaxH3KeyframeConditioningInjector import MinimaxH3KeyframeConditioningInjector, MinimaxH3AnyFrameConditioningInjector
 from .martinodes.BatchRandomPicker import BatchRandomPicker
 from .martinodes.BatchBoundPicker import BatchBoundPicker
@@ -44,6 +45,7 @@ NODE_CLASS_MAPPINGS = {
     "MARLatentAVContrast": LatentAVContrast,
     "MARVideoLatentPicker": VideoLatentPicker,
     "MARLatentAVSlicer": LatentAVSlicer,
+    "MARLatentTokenExtractor": LatentTokenExtractor,
     "MARMinimaxH3KeyframeConditioningInjector": MinimaxH3KeyframeConditioningInjector,
     "MARMinimaxH3AnyFrameConditioningInjector": MinimaxH3AnyFrameConditioningInjector,
     "MARBatchRandomPicker": BatchRandomPicker,
@@ -74,6 +76,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "MARLatentAVContrast": "Adjust video latent contrast",
     "MARVideoLatentPicker": "Pick latent from video",
     "MARLatentAVSlicer": "Slice video+audio latent",
+    "MARLatentTokenExtractor": "Extract latent token",
     "MARMinimaxH3KeyframeConditioningInjector": "Inject first or last frame into H3 conditioning",
     "MARMinimaxH3AnyFrameConditioningInjector": "Inject any frame into H3 conditioning",
     "MARBatchRandomPicker": "Pick random batch item",

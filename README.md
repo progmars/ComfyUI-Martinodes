@@ -241,6 +241,17 @@ Currently supports MiniMax H3 only, aligning start and end offsets to the model'
   - `video_fps`: Frame rate used to calculate synchronized video and audio token lengths (default: `24.0`).
 - **Outputs**: `av_latent`
 
+### Extract latent token (LatentTokenExtractor)
+Extracts a single temporal video latent token at the given token index. For MiniMax H3, a token covers either 1 or 4 frames (pattern `1,4,4,4,4` per 17-frame chunk). The output latent and `frame_index` can be fed directly into MinimaxH3AnyFrameConditioningInjector. Audio is dropped.
+
+- **Inputs**: `latent` (video or combined video+audio latent)
+- **Parameters**:
+  - `token_index`: Zero-based temporal token index (default: `0`).
+- **Outputs**:
+  - `latent`: Video latent containing only the selected token.
+  - `frame_index`: Zero-based index of the first video frame covered by the token.
+  - `frame_count`: Number of video frames covered by the token (`1` or `4`).
+
 ### Video+audio latent info (LatentAVInfo)
 Retrieves information from a combined `av_latent`, while also passing the original latent through for convenience in longer node chains.
 

@@ -21,6 +21,8 @@ class BatchBoundPicker:
 
 
     def run(self, any_batch, mode):
+        if any_batch is None:
+            return (None,)
         any_batch = unwrap_singleton_batch_input(any_batch)
         mode = mode[0] if isinstance(mode, list) else mode
         batch_size = get_batch_size(any_batch)

@@ -22,10 +22,9 @@ class LatentAVInfo:
     CATEGORY = CATEGORY
     DESCRIPTION = "Displays basic info for a combined AV latent: frame count, video resolution, token counts, and mask information."
 
-    def run(self, **kwargs):
-        av_latent = kwargs.get("av_latent", None)
+    def run(self, av_latent):
         if av_latent is None:
-            raise Exception("No av_latent provided.")
+            return (av_latent, 0, "", 0, 0, "")
 
         samples = av_latent.get("samples", None)
         if samples is None:
