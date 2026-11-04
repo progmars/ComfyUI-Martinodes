@@ -120,7 +120,7 @@ class LoadAVLatent:
             return (av_latent, )
 
         except Exception as e:
-            print(f"LoadAVLatent: Failed to load safetensors. Passing None. Error: {e}")
+            print(f"LoadAVLatent: Failed to load safetensors {file_path}. Passing None. Error: {e}")
             return (None, )
 
 

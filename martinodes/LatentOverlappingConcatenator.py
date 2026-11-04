@@ -83,6 +83,10 @@ class LatentListOverlappingConcatenator:
         video_resolve = self.RESOLVE_MAP[video_overlap_resolve]
         audio_resolve = self.RESOLVE_MAP[audio_overlap_resolve]
         out_av = av_latents[0]
+
+        if (out_av is None):            
+            return (None, )
+
         audio_token_rate = MINIMAX_H3_PARAMS["audio_token_rate"]
         frame_multi = MINIMAX_H3_PARAMS["frame_multi"]
         frame_offset = MINIMAX_H3_PARAMS["frame_offset"]

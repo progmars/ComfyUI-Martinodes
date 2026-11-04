@@ -74,9 +74,7 @@ class FileLister:
         try:
             folder = self.resolve_folder(input_path)
         except FileNotFoundError:
-            # cannot return empty list, Comfy throws index error,
-            # returning dummy None and let the downstream nodes handle it
-            return ([None], 0)
+            return ([], 0)
 
         filepaths = self.list_files(folder)
         return (filepaths, len(filepaths))
