@@ -1,4 +1,4 @@
-from .shared import CATEGORY, MINIMAX_H3_PARAMS
+from .shared import CATEGORY, MINIMAX_H3_PARAMS as VIDEO_MODEL_PARAMS
 from .latentops import align_duration_to_tokens, align_offset_to_tokens, unpack_samples
 import comfy.nested_tensor
 
@@ -37,18 +37,20 @@ class LatentAVSlicer:
         video_fps = kwargs.get("video_fps", video_fps)
         end_offset_from = kwargs.get("end_offset_from", end_offset_from)
 
+        params=VIDEO_MODEL_PARAMS
+
         out_av = self.slice_av_latent(
+            params,
             av_latent=av_latent,
             start_offset_seconds=start_offset_seconds,
             end_offset_seconds=end_offset_seconds,
             end_offset_from=end_offset_from,
-            video_fps=video_fps,
-            params=MINIMAX_H3_PARAMS
+            video_fps=video_fps
         )
         return (out_av, )
 
 
-    def slice_av_latent(self, av_latent, start_offset_seconds=0.0, end_offset_seconds=0.0, end_offset_from="end", video_fps=24.0, params=MINIMAX_H3_PARAMS):
+    def slice_av_latent(self, video_model_params, av_latent, start_offset_seconds=0.0, end_offset_seconds=0.0, end_offset_from="end", video_fps=24.0):
         if av_latent is None:
             return None
 
@@ -73,17 +75,17 @@ class LatentAVSlicer:
         t_dim_a = -1
         total_a = audio_tensor.shape[t_dim_a]
 
-        start_v, start_a = align_offset_to_tokens(start_offset_seconds, video_fps, params)
+        start_v, start_a = align_offset_to_tokens(start_offset_seconds, video_fps, video_model_params)
         start_v = min(start_v, total_v)
         if audio_tensor is not None:
             start_a = min(start_a, total_a)
 
         if end_offset_from == "start":
-            end_v, end_a = align_duration_to_tokens(end_offset_seconds, video_fps, params)
+            end_v, end_a = align_duration_to_tokens(end_offset_seconds, video_fps, video_model_params)
             end_v = min(end_v, total_v)
             end_a = min(end_a, total_a)
         else:  # "end"
-            end_v_trim, end_a_trim = align_offset_to_tokens(end_offset_seconds, video_fps, params)
+            end_v_trim, end_a_trim = align_offset_to_tokens(end_offset_seconds, video_fps, video_model_params)
             end_v = max(0, total_v - end_v_trim)
             end_a = max(0, total_a - end_a_trim)
 

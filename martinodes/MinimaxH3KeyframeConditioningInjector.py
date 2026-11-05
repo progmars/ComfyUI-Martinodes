@@ -1,4 +1,4 @@
-from .shared import MINIMAX_H3_PARAMS
+from .shared import MINIMAX_H3_PARAMS as VIDEO_MODEL_PARAMS
 from .latentops import unpack_samples
 
 class MinimaxH3KeyframeConditioningInjector:
@@ -51,11 +51,11 @@ class MinimaxH3KeyframeConditioningInjector:
         if first_video is None and last_video is None:
             return (conditioning,)
 
-        params = MINIMAX_H3_PARAMS # TODO: could support other models in the future as well
-        frame_multi = int(params.get("frame_multi"))
-        frame_offset = int(params.get("frame_offset"))
-        min_latent_tokens = int(params.get("min_latent_temporal_tokens")) 
-        keyframe_carrier_key = params.get("keyframe_carrier_key")
+        params = VIDEO_MODEL_PARAMS
+        frame_multi = params["frame_multi"]
+        frame_offset = params["frame_offset"]
+        min_latent_tokens = params["min_latent_temporal_tokens"]
+        keyframe_carrier_key = params["keyframe_carrier_key"]
 
         # assume the latent has already been prepared in correct rounded length
         if latent_t <= min_latent_tokens:
@@ -105,8 +105,8 @@ class MinimaxH3AnyFrameConditioningInjector:
         if injectable is None:
             return (conditioning,)
 
-        params = MINIMAX_H3_PARAMS # TODO: could support other models in the future as well
-        keyframe_carrier_key = params.get("keyframe_carrier_key")
+        params = VIDEO_MODEL_PARAMS
+        keyframe_carrier_key = params["keyframe_carrier_key"]
 
         out_conditioning = inject_keyframe(conditioning, injectable, keyframe_carrier_key, frame_index)
 

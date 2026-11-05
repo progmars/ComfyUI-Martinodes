@@ -1,4 +1,4 @@
-from .shared import CATEGORY, MINIMAX_H3_PARAMS
+from .shared import CATEGORY, MINIMAX_H3_PARAMS as VIDEO_MODEL_PARAMS
 from .latentops import align_duration_to_tokens, unpack_samples, pack_samples
 import torch
 import torch.nn.functional as F
@@ -47,7 +47,7 @@ class LatentAVMaskedExtender:
                 keep_target_audio, keep_target_video
             ), )
 
-        params = MINIMAX_H3_PARAMS
+        params = VIDEO_MODEL_PARAMS
 
         video_overlap_tokens, audio_overlap_tokens = align_duration_to_tokens(overlap_duration_seconds, video_fps, params)
         

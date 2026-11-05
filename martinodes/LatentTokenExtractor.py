@@ -1,4 +1,4 @@
-from .shared import CATEGORY, MINIMAX_H3_PARAMS
+from .shared import CATEGORY, MINIMAX_H3_PARAMS as VIDEO_MODEL_PARAMS
 from .latentops import unpack_samples
 
 
@@ -39,9 +39,9 @@ class LatentTokenExtractor:
         if token_index >= total_t:
             raise ValueError(f"LatentTokenExtractor: token_index {token_index} is out of range (total tokens: {total_t})")
 
-        params = MINIMAX_H3_PARAMS
-        frame_multi = int(params["frame_multi"])
-        frame_offset = int(params["frame_offset"])
+        params = VIDEO_MODEL_PARAMS
+        frame_multi = params["frame_multi"]
+        frame_offset = params["frame_offset"]
 
         # token pattern per chunk: 1,4,4,4,4 frames
         chunk, pos = divmod(token_index, frame_offset)

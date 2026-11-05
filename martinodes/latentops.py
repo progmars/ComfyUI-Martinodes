@@ -1,15 +1,15 @@
 import torch
 import comfy.nested_tensor
 
-def align_offset_to_tokens(seconds, video_fps, params):
+def align_offset_to_tokens(seconds, video_fps, video_model_params):
     """
     Calculates the number of video and audio tokens to advance or trim by whole VAE chunks.
     Video VAE encodes in frame_multi-frame clips, each advancing the latent by frame_offset tokens.
     Slicing at head/tail must advance by multiples of frame_offset tokens to keep VAE temporal decoding in-phase.
     """
-    audio_token_rate = params["audio_token_rate"]
-    frame_multi = params["frame_multi"]
-    frame_offset = params["frame_offset"]
+    audio_token_rate = video_model_params["audio_token_rate"]
+    frame_multi = video_model_params["frame_multi"]
+    frame_offset = video_model_params["frame_offset"]
 
     target_frames = seconds * video_fps
     k = max(0, int(round(target_frames / frame_multi)))
@@ -18,7 +18,7 @@ def align_offset_to_tokens(seconds, video_fps, params):
     return video_tokens, audio_tokens
 
 
-def align_duration_to_tokens(seconds, video_fps, params):
+def align_duration_to_tokens(seconds, video_fps, video_model_params):
     """
     Aligns time duration to video and audio token count.
     It includes the frame offset to support standalone clips
@@ -36,10 +36,10 @@ def align_duration_to_tokens(seconds, video_fps, params):
     of at least one 1,4 segment (minimum tokens)
     or aligned 1,4,4,4,4,(repeat n times),1,4 segment.
     """
-    audio_token_rate = params["audio_token_rate"] # 40
-    frame_multi = params["frame_multi"] # 17
-    frame_offset = params["frame_offset"] # 5
-    min_latent_temporal_tokens = params["min_latent_temporal_tokens"] # 2
+    audio_token_rate = video_model_params["audio_token_rate"] # 40
+    frame_multi = video_model_params["frame_multi"] # 17
+    frame_offset = video_model_params["frame_offset"] # 5
+    min_latent_temporal_tokens = video_model_params["min_latent_temporal_tokens"] # 2
 
     target_frames = seconds * video_fps
     k = max(0, int(round((target_frames - frame_offset) / frame_multi)))

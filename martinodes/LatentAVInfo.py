@@ -1,6 +1,6 @@
 import torch
 from .latentops import unpack_samples
-from .shared import CATEGORY, MINIMAX_H3_PARAMS
+from .shared import CATEGORY, MINIMAX_H3_PARAMS as VIDEO_MODEL_PARAMS
 
 
 class LatentAVInfo:
@@ -32,32 +32,35 @@ class LatentAVInfo:
         
         tensors = unpack_samples(samples)
 
-        if len(tensors) < 2:
-            raise Exception("av_latent does not contain both video and audio samples.")
-
         video_tensor = tensors[0]
-        audio_tensor = tensors[1]
-
         dims_v = len(video_tensor.shape)
         t_dim_v = 2 if dims_v >= 3 else 0
         video_tokens = int(video_tensor.shape[t_dim_v])
-        audio_tokens = int(audio_tensor.shape[-1])
+
         batch_size = video_tensor.shape[0] if video_tensor.ndim > 1 else 1
 
         latent_h = int(video_tensor.shape[-2])
         latent_w = int(video_tensor.shape[-1])
         video_resolution = f"{latent_w}x{latent_h}"
 
-        # Inverse of the token snapping rule used by MiniMax H3 latent nodes.
-        frame_multi = float(MINIMAX_H3_PARAMS["frame_multi"])
-        frame_offset = float(MINIMAX_H3_PARAMS["frame_offset"])
-        min_latent_temporal_tokens = float(MINIMAX_H3_PARAMS["min_latent_temporal_tokens"])
+        params = VIDEO_MODEL_PARAMS
+        frame_multi = params["frame_multi"]
+        frame_offset = params["frame_offset"]
+        min_latent_temporal_tokens = params["min_latent_temporal_tokens"]
+        single_token_frames = params["single_token_frames"]
 
-        if video_tokens <= min_latent_temporal_tokens:
-            frames = int(round(frame_offset))
+        if video_tokens == 1:
+            frames = single_token_frames
+        elif video_tokens <= min_latent_temporal_tokens: # in Minimax case, it will be the same as 1
+            frames = frame_offset
         else:
             k = (float(video_tokens) - min_latent_temporal_tokens) / frame_offset
             frames = int(round(k * frame_multi + frame_offset))
+
+        audio_tokens = 0
+        if len(tensors) >= 2:
+            audio_tensor = tensors[1]
+            audio_tokens = int(audio_tensor.shape[-1])
 
         # Latent mask information
         noise_mask = av_latent.get("noise_mask", None)

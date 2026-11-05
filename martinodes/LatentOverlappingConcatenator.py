@@ -1,5 +1,5 @@
 import torch
-from .shared import CATEGORY, MINIMAX_H3_PARAMS
+from .shared import CATEGORY, MINIMAX_H3_PARAMS as VIDEO_MODEL_PARAMS
 from .latentops import align_duration_to_tokens, unpack_samples
 
 
@@ -30,7 +30,8 @@ class LatentOverlappingConcatenator:
     DESCRIPTION = "Concatenates two video+audio latents, applying overlapping logic."
 
     def run(self, video_fps, overlap_duration_seconds, video_overlap_resolve, audio_overlap_resolve, av_latent_1=None, av_latent_2=None):
-        out_av = concat_av_latents(video_fps, overlap_duration_seconds, video_overlap_resolve, audio_overlap_resolve, av_latent_1, av_latent_2)
+        params = VIDEO_MODEL_PARAMS
+        out_av = concat_av_latents(video_fps, overlap_duration_seconds, video_overlap_resolve, audio_overlap_resolve, params, av_latent_1, av_latent_2)
         return (out_av, )
 
 
@@ -87,10 +88,11 @@ class LatentListOverlappingConcatenator:
         if (out_av is None):            
             return (None, )
 
-        audio_token_rate = MINIMAX_H3_PARAMS["audio_token_rate"]
-        frame_multi = MINIMAX_H3_PARAMS["frame_multi"]
-        frame_offset = MINIMAX_H3_PARAMS["frame_offset"]
-        min_video_tokens = MINIMAX_H3_PARAMS["min_latent_temporal_tokens"]
+        params = VIDEO_MODEL_PARAMS
+        audio_token_rate = params["audio_token_rate"]
+        frame_multi = params["frame_multi"]
+        frame_offset = params["frame_offset"]
+        min_video_tokens = params["min_latent_temporal_tokens"]
 
         def estimate_video_frames(video_tokens):
             if video_tokens <= min_video_tokens:
@@ -115,7 +117,7 @@ class LatentListOverlappingConcatenator:
             # compensate ~0.08s shorter audio for every join
             # (less than 1 token, so cannot add to all joins, need to accumulate)
             requested_video_overlap, requested_audio_overlap = align_duration_to_tokens(
-                overlap_duration_seconds, video_fps, MINIMAX_H3_PARAMS
+                overlap_duration_seconds, video_fps,  params
             )
 
             effective_video_overlap = min(requested_video_overlap, left_video, right_video)
@@ -132,6 +134,7 @@ class LatentListOverlappingConcatenator:
                 overlap_duration_seconds,
                 video_resolve,
                 audio_resolve,
+                params,
                 av_latent_1=out_av,
                 av_latent_2=av_latent,
                 audio_overlap_tokens=effective_audio_overlap,
@@ -159,7 +162,7 @@ class LatentListOverlappingConcatenator:
         return (out_av, )
 
 
-def concat_av_latents(video_fps, overlap_duration_seconds, video_overlap_resolve, audio_overlap_resolve, av_latent_1=None, av_latent_2=None, audio_overlap_tokens=None):
+def concat_av_latents(video_fps, overlap_duration_seconds, video_overlap_resolve, audio_overlap_resolve, video_model_params, av_latent_1=None, av_latent_2=None, audio_overlap_tokens=None):
     if av_latent_1 is None and av_latent_2 is None:
         return None
     if av_latent_1 is None:
@@ -170,7 +173,7 @@ def concat_av_latents(video_fps, overlap_duration_seconds, video_overlap_resolve
     # Convert requested overlap duration into latent token counts using the same
     # snapping rules the extender uses, so overlaps stay aligned to the model's temporal compression.
     video_overlap_tokens, aligned_audio_overlap_tokens = align_duration_to_tokens(
-        overlap_duration_seconds, video_fps, MINIMAX_H3_PARAMS
+        overlap_duration_seconds, video_fps, video_model_params
     )
     if audio_overlap_tokens is None:
         audio_overlap_tokens = aligned_audio_overlap_tokens
