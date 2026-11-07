@@ -12,10 +12,10 @@ class LatentAVMaskedExtender:
             "required": {
                 "target_av_latent": ("LATENT", ),
                 "mode": (["extend_tail", "extend_head", "prepend_head", "prepend_tail"], {"default": "extend_tail"}),
-                "overlap_duration_seconds": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 60.0, "step": 0.1}),
+                "overlap_duration_seconds": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 600.0, "step": 0.1}),
                 "video_fps": ("FLOAT", {"default": 24.0, "min": 1.0, "max": 120.0, "step": 1.0}),
-                "video_mask_fade_seconds": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 60.0, "step": 0.1}),
-                "audio_mask_fade_seconds": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 60.0, "step": 0.1}),
+                "video_mask_fade_seconds": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 600.0, "step": 0.1}),
+                "audio_mask_fade_seconds": ("FLOAT", {"default": 0.1, "min": 0.0, "max": 600.0, "step": 0.1}),
                 "trim_freeze_tail": ("BOOLEAN", {"default": False}),
                 "freeze_threshold": ("FLOAT", {"default": 1e-4, "min": 0.0, "max": 0.1, "step": 1e-5}),
                 "keep_target_audio": ("BOOLEAN", {"default": False}),
