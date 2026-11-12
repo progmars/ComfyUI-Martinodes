@@ -48,6 +48,7 @@ class FolderDeleter:
 
         raise FileNotFoundError(f"FolderDeleter: Folder not found: '{folder_path}'")
 
+
     def run(self, folder_path=""):
         try:
             folder = self.resolve_folder(folder_path)
