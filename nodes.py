@@ -22,6 +22,7 @@ from .martinodes.BatchRandomPicker import BatchRandomPicker
 from .martinodes.BatchBoundPicker import BatchBoundPicker
 from .martinodes.FileLister import FileLister
 from .martinodes.WorkflowLoop import WorkflowLoop
+from .martinodes.FolderDeleter import FolderDeleter
 
 NODE_CLASS_MAPPINGS = {
     "MARMediaSlicer": MediaSlicer,
@@ -51,7 +52,8 @@ NODE_CLASS_MAPPINGS = {
     "MARBatchRandomPicker": BatchRandomPicker,
     "MARBatchBoundPicker": BatchBoundPicker,
     "MARFileLister": FileLister,
-    "MARWorkflowLoop": WorkflowLoop
+    "MARWorkflowLoop": WorkflowLoop,
+    "MARFolderDeleter": FolderDeleter,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -82,5 +84,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "MARBatchRandomPicker": "Pick random batch item",
     "MARBatchBoundPicker": "Pick first or last batch item",
     "MARFileLister": "List files in folder",
-    "MARWorkflowLoop": "Retrigger workflow"
+    "MARWorkflowLoop": "Retrigger workflow",
+    "MARFolderDeleter": "Delete folder",
 }
