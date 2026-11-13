@@ -75,6 +75,10 @@ class LatentAVSlicer:
         t_dim_a = -1
         total_a = audio_tensor.shape[t_dim_a]
 
+        # Duration alignment otherwise expands a zero-length interval to the minimum clip.
+        if end_offset_from == "start" and start_offset_seconds == end_offset_seconds:
+            return None
+
         start_v, start_a = align_offset_to_tokens(start_offset_seconds, video_fps, video_model_params)
         start_v = min(start_v, total_v)
         if audio_tensor is not None:
@@ -89,19 +93,8 @@ class LatentAVSlicer:
             end_v = max(0, total_v - end_v_trim)
             end_a = max(0, total_a - end_a_trim)
 
-        if start_v >= end_v:
-            hint = " (if 'end_offset_seconds' was intended as an absolute timestamp from start, set end_offset_from='start')" if end_offset_from == "end" else ""
-            raise ValueError(
-                f"LatentAVSlicer: Calculated start video token ({start_v}) is >= end video token ({end_v}) "
-                f"(total video tokens: {total_v}){hint}. Slicing would result in an empty latent."
-            )
-
-        if start_a >= end_a:
-            hint = " (if 'end_offset_seconds' was intended as an absolute timestamp from start, set end_offset_from='start')" if end_offset_from == "end" else ""
-            raise ValueError(
-                f"LatentAVSlicer: Calculated start audio token ({start_a}) is >= end audio token ({end_a}) "
-                f"(total audio tokens: {total_a}){hint}. Slicing would result in empty audio."
-            )
+        if start_v >= end_v or start_a >= end_a:
+            return None
 
         idx_v = [slice(None)] * dims_v
         idx_v[t_dim_v] = slice(start_v, end_v)
